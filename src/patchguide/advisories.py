@@ -1,9 +1,12 @@
-"""Load local advisory JSON files."""
+"""Load local advisory JSON files from checkout or installed package."""
 import json
 from pathlib import Path
 
 def default_advisory_dir():
-    return Path(__file__).resolve().parents[2] / "advisories"
+    checkout = Path(__file__).resolve().parents[2] / "advisories"
+    if checkout.is_dir():
+        return checkout
+    return Path(__file__).resolve().parent / "data" / "advisories"
 
 def load_advisories(directory=None):
     root = Path(directory) if directory else default_advisory_dir()
