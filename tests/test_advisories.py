@@ -40,6 +40,21 @@ class AdvisoryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "invalid CVE id"):
                 load_advisories(directory)
 
+    def test_packaged_and_checkout_advisories_match(self):
+        root = Path(__file__).resolve().parents[1]
+        checkout = root / "advisories"
+        packaged = root / "src" / "patchguide" / "data" / "advisories"
+        checkout_records = {
+            path.name: json.loads(path.read_text(encoding="utf-8"))
+            for path in checkout.glob("CVE-*.json")
+        }
+        packaged_records = {
+            path.name: json.loads(path.read_text(encoding="utf-8"))
+            for path in packaged.glob("CVE-*.json")
+        }
+        self.assertEqual(checkout_records, packaged_records)
+        self.assertGreater(len(checkout_records), 0)
+
     def test_statuses(self):
         self.assertEqual(evaluate_advisories("8.4.26", [SAMPLE])[0]["status"], "affected")
         self.assertEqual(evaluate_advisories("8.4.27", [SAMPLE])[0]["status"], "fixed")
