@@ -1,0 +1,11 @@
+{
+  "name": "patchguide/example-project",
+  "require": {
+    "php": "^8.2"
+  },
+  "config": {
+    "platform": {
+      "php": "8.2.20"
+    }
+  }
+}
