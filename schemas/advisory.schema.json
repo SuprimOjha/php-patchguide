@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "PatchGuide advisory",
+  "type": "object",
+  "required": [
+    "id",
+    "title",
+    "severity",
+    "published",
+    "fixed_by",
+    "url"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+    },
+    "title": {
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ]
+    },
+    "published": {
+      "type": "string",
+      "format": "date"
+    },
+    "fixed_by": {
+      "type": "object"
+    },
+    "url": {
+      "type": "string",
+      "format": "uri"
+    },
+    "references": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "notes": {
+      "type": "string"
+    }
+  }
+}
