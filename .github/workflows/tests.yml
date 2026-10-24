@@ -18,6 +18,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - run: python -m pip install -e .
+      - run: python -m compileall -q src tests scripts
       - run: python -m unittest discover -s tests -v
       - run: |
           patchguide version
@@ -29,3 +30,21 @@ jobs:
           name: report-${{ matrix.python-version }}
           path: patchguide-report.json
           if-no-files-found: ignore
+
+  wheel-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip wheel . --no-deps --wheel-dir dist
+      - run: python -m pip install --no-deps dist/*.whl
+      - name: Verify installed package outside the checkout
+        run: |
+          cd "${{ runner.temp }}"
+          patchguide version
+          patchguide advisories list
+          patchguide advisories show CVE-2026-109618
+          patchguide check "${{ github.workspace }}/tests/fixtures" --json "${{ runner.temp }}/installed-package-report.json"
