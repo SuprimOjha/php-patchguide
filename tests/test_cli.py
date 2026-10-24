@@ -4,6 +4,7 @@ import tempfile
 import unittest
 from contextlib import redirect_stderr, redirect_stdout
 from pathlib import Path
+from unittest.mock import patch
 
 from patchguide.cli import main
 
@@ -54,6 +55,33 @@ class CliTests(unittest.TestCase):
         with redirect_stderr(err):
             code = main(["check", "path-that-should-not-exist-patchguide"])
         self.assertEqual(code, 2)
+
+    def test_fail_on_affected_returns_one(self):
+        project = {"path": "/tmp/demo", "cli_runtime": {"version": "8.4.26"},
+                   "runtime_warning": "Test runtime"}
+        finding = {"id": "CVE-2099-12345", "title": "Test", "severity": "critical",
+                   "status": "affected", "current_version": "8.4.26",
+                   "fixed_version": "8.4.27", "message": "Upgrade",
+                   "url": "https://example.invalid"}
+        with patch("patchguide.cli.inspect_project", return_value=project), \
+             patch("patchguide.cli.load_advisories", return_value=[]), \
+             patch("patchguide.cli.evaluate_advisories", return_value=[finding]), \
+             redirect_stdout(io.StringIO()):
+            code = main(["check", ".", "--fail-on", "affected"])
+        self.assertEqual(code, 1)
+
+    def test_fail_on_unknown_returns_one(self):
+        project = {"path": "/tmp/demo", "cli_runtime": {"version": None},
+                   "runtime_warning": "Test runtime"}
+        finding = {"id": "CVE-2099-12345", "title": "Test", "severity": "critical",
+                   "status": "unknown", "current_version": None,
+                   "fixed_version": None, "message": "Unknown", "url": "https://example.invalid"}
+        with patch("patchguide.cli.inspect_project", return_value=project), \
+             patch("patchguide.cli.load_advisories", return_value=[]), \
+             patch("patchguide.cli.evaluate_advisories", return_value=[finding]), \
+             redirect_stdout(io.StringIO()):
+            code = main(["check", ".", "--fail-on", "unknown"])
+        self.assertEqual(code, 1)
 
 
 if __name__ == "__main__":
