@@ -1,0 +1,28 @@
+name: PHP PatchGuide example
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  php-security-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run PHP PatchGuide
+        uses: SuprimOjha/php-patchguide@main
+        with:
+          path: .
+          fail-on: affected
+          report-path: patchguide-report.json
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-patchguide-report
+          path: patchguide-report.json
+          if-no-files-found: ignore
