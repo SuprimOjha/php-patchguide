@@ -7,3 +7,5 @@ venv/
 dist/
 build/
 reports/
+patchguide-report.json
+action-smoke-report.json
