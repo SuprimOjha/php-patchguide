@@ -23,6 +23,13 @@ class ProjectInspectionTests(unittest.TestCase):
             result = inspect_project(directory)
             self.assertEqual(result["php_ini_settings"]["session.upload_progress.enabled"][0]["value"], "off")
 
+    def test_malformed_composer_sections_are_reported(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "composer.json").write_text(
+                '{"require": [], "config": {"platform": []}}', encoding="utf-8")
+            result = inspect_project(directory)
+            self.assertIn("must be an object", result["composer"]["error"])
+
     def test_missing_directory_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
