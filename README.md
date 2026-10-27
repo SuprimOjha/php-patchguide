@@ -34,8 +34,8 @@ python -m unittest discover -s tests -v
 
 ## What it checks
 
-- Composer's declared PHP requirement and platform version.
-- PHP files, version-pin files, and PHP image tags in Dockerfiles.
+- Composer's declared PHP requirement and platform version, shown in the human-readable report.
+- PHP files, version-pin files, and PHP image tags in Dockerfiles, also shown in the report.
 - The version reported by the local `php -v` command.
 - Local advisory records with known fixed versions.
 - A small set of PHP INI settings, including `session.upload_progress.enabled`; conflicting values are reported as unknown rather than treated as safely configured.
