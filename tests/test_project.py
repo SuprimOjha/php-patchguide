@@ -30,6 +30,25 @@ class ProjectInspectionTests(unittest.TestCase):
             result = inspect_project(directory)
             self.assertIn("must be an object", result["composer"]["error"])
 
+    def test_ini_comments_do_not_override_active_value(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "php.ini").write_text(
+                "; session.upload_progress.enabled=On\n"
+                "# session.upload_progress.enabled=On\n"
+                "session.upload_progress.enabled=Off ; disabled for this project\n",
+                encoding="utf-8")
+            result = inspect_project(directory)
+            values = result["php_ini_settings"]["session.upload_progress.enabled"]
+            self.assertEqual([item["value"] for item in values], ["off"])
+
+    def test_vendor_directory_is_skipped(self):
+        with tempfile.TemporaryDirectory() as directory:
+            vendor = Path(directory, "vendor")
+            vendor.mkdir()
+            Path(vendor, "library.php").write_text("<?php", encoding="utf-8")
+            result = inspect_project(directory)
+            self.assertEqual(result["php_file_count"], 0)
+
     def test_missing_directory_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             with self.assertRaises(ValueError):
