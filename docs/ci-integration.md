@@ -7,12 +7,18 @@ python -m pip install .
 patchguide check . --json patchguide-report.json --fail-on affected
 ```
 
-For strict handling of unknown results:
+For strict handling of unknown evidence:
 
 ```bash
 patchguide check . --json patchguide-report.json --fail-on unknown
 ```
 
-The `--fail-on` policy controls the exit code; it does not change the findings. Use `affected` to fail only when a known local advisory marks the detected CLI version affected. Use `unknown` if missing runtime evidence or missing fix rules should block the pipeline. These policies do not prove the version represents PHP-FPM, Apache, a container, or production hosting.
+To fail when a mitigation-only advisory detects a configuration needing attention:
 
-Review vendor advisories for backports before enforcing a gate. Keep the JSON report as a CI artifact for audit and troubleshooting. Avoid uploading reports if project paths are sensitive; report paths may reveal workspace layout.
+```bash
+patchguide check . --json patchguide-report.json --fail-on mitigation-required
+```
+
+The policy controls the exit code; it does not change the findings. Version policies apply only to the detected CLI version and local records. The mitigation policy is based on static INI evidence; it cannot prove effective settings in PHP-FPM, Apache, containers, or every worker.
+
+Keep JSON reports as CI artifacts only if workspace paths are acceptable to disclose. Review official vendor advisories for backports before enforcing gates, and decide how your team handles unknown results.
