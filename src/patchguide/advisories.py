@@ -30,7 +30,10 @@ def load_advisories(directory=None):
         if not isinstance(item, dict):
             raise ValueError(f"Advisory {path} must contain a JSON object")
         identifier = item.get("id")
-        mitigation_only = item.get("kind") == "mitigation"
+        kind = item.get("kind", "version")
+        if kind not in {"version", "mitigation"}:
+            raise ValueError(f"Advisory {path} has unsupported kind: {kind!r}")
+        mitigation_only = kind == "mitigation"
         fixed_by = item.get("fixed_by", {})
         if not isinstance(identifier, str) or not _ID_PATTERN.fullmatch(identifier):
             raise ValueError(f"Advisory {path} has an invalid CVE id")
@@ -38,7 +41,7 @@ def load_advisories(directory=None):
             raise ValueError(f"Duplicate advisory id {identifier} in {root}")
         if not mitigation_only and (not isinstance(fixed_by, dict) or not fixed_by):
             raise ValueError(f"Advisory {path} must include a non-empty fixed_by object")
-        if mitigation_only and fixed_by not in ({}, None):
+        if mitigation_only and fixed_by != {}:
             raise ValueError(f"Mitigation-only advisory {path} must not claim fixed versions")
         for branch, version in fixed_by.items():
             if not isinstance(branch, str) or not _BRANCH_PATTERN.fullmatch(branch):
