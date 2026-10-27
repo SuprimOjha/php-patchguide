@@ -38,7 +38,7 @@ python -m unittest discover -s tests -v
 - PHP files, version-pin files, and PHP image tags in Dockerfiles.
 - The version reported by the local `php -v` command.
 - Local advisory records with known fixed versions.
-- A small set of PHP INI settings, including `session.upload_progress.enabled`.
+- A small set of PHP INI settings, including `session.upload_progress.enabled`; conflicting values are reported as unknown rather than treated as safely configured.
 
 The scan is read-only. It doesn't run your application code or upload project files. The scheduled archive check is separate: it fetches the public PHP archive and creates a snapshot for manual review.
 
