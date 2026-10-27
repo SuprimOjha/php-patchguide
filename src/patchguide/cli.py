@@ -61,6 +61,7 @@ def main(argv=None):
         findings = evaluate_advisories(
             project["cli_runtime"].get("version"),
             load_advisories(args.advisories_dir),
+            project["php_ini_settings"],
         )
         report = build_report(project, findings)
         if args.json_path == "-":
