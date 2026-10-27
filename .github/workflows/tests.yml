@@ -48,3 +48,25 @@ jobs:
           patchguide advisories list
           patchguide advisories show CVE-2026-109618
           patchguide check "${{ github.workspace }}/tests/fixtures" --json "${{ runner.temp }}/installed-package-report.json"
+
+  action-smoke-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the local composite action
+        id: patchguide
+        uses: ./
+        with:
+          path: tests/fixtures
+          fail-on: never
+          report-path: action-smoke-report.json
+      - name: Check action output
+        env:
+          REPORT_PATH: ${{ steps.patchguide.outputs.report-path }}
+        run: test -s "$REPORT_PATH"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: composite-action-report
+          path: action-smoke-report.json
+          if-no-files-found: ignore
