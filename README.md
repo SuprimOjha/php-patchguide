@@ -2,6 +2,7 @@
 
 [![Tests](https://github.com/SuprimOjha/php-patchguide/actions/workflows/tests.yml/badge.svg)](https://github.com/SuprimOjha/php-patchguide/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python versions](https://img.shields.io/badge/python-3.10%E2%80%933.13-blue)](https://www.python.org/downloads/)
 
 PHP PatchGuide is a small command-line tool for checking a PHP project's local runtime details against a set of reviewed PHP security advisories. It can also look for a few relevant settings in INI files and write a report you can keep with a CI run.
 
