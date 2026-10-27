@@ -16,11 +16,17 @@ class ProjectInspectionTests(unittest.TestCase):
         self.assertTrue(any(item["tag"] == "8.4.26-fpm-alpine"
                             for item in result["docker_php_images"]))
 
+    def test_ini_setting_is_detected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, "php.ini").write_text(
+                "; comment\nsession.upload_progress.enabled = Off\n", encoding="utf-8")
+            result = inspect_project(directory)
+            self.assertEqual(result["php_ini_settings"]["session.upload_progress.enabled"][0]["value"], "off")
+
     def test_missing_directory_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
-            missing = Path(directory) / "does-not-exist"
             with self.assertRaises(ValueError):
-                inspect_project(missing)
+                inspect_project(Path(directory) / "does-not-exist")
 
 
 if __name__ == "__main__":
