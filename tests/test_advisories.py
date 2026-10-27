@@ -37,6 +37,21 @@ class AdvisoryTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "invalid CVE id"):
                 load_advisories(directory)
 
+    def test_duplicate_ids_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            for name in ("CVE-2099-12345.json", "CVE-2099-99999.json"):
+                Path(directory, name).write_text(json.dumps(SAMPLE), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "Duplicate advisory id"):
+                load_advisories(directory)
+
+    def test_unsupported_advisory_kind_is_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            record = dict(SAMPLE, kind="guess")
+            Path(directory, "CVE-2099-12345.json").write_text(
+                json.dumps(record), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "unsupported kind"):
+                load_advisories(directory)
+
     def test_packaged_and_checkout_advisories_match(self):
         root = Path(__file__).resolve().parents[1]
         def read_records(directory):
