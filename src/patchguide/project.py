@@ -74,7 +74,13 @@ def inspect_project(path="."):
             error = f"Invalid composer.json: {exc.msg}"
     config = composer.get("config", {})
     platform = config.get("platform", {}) if isinstance(config, dict) else {}
+    if not isinstance(platform, dict):
+        platform = {}
+        error = error or "composer.json config.platform must be an object"
     req = composer.get("require", {})
+    if not isinstance(req, dict):
+        req = {}
+        error = error or "composer.json require must be an object"
     docker, pins, ini_files = [], {}, []
     settings = {"session.upload_progress.enabled": [], "session.serialize_handler": []}
     for file in files:
