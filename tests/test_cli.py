@@ -23,6 +23,7 @@ class CliTests(unittest.TestCase):
             code = main(["advisories", "list"])
         self.assertEqual(code, 0)
         self.assertIn("CVE-2026-109618", out.getvalue())
+        self.assertIn("CVE-2026-115560", out.getvalue())
 
     def test_json_stdout_is_parseable(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -56,32 +57,27 @@ class CliTests(unittest.TestCase):
             code = main(["check", "path-that-should-not-exist-patchguide"])
         self.assertEqual(code, 2)
 
-    def test_fail_on_affected_returns_one(self):
+    def _run_with_finding(self, status, policy):
         project = {"path": "/tmp/demo", "cli_runtime": {"version": "8.4.26"},
-                   "runtime_warning": "Test runtime"}
-        finding = {"id": "CVE-2099-12345", "title": "Test", "severity": "critical",
-                   "status": "affected", "current_version": "8.4.26",
-                   "fixed_version": "8.4.27", "message": "Upgrade",
+                   "runtime_warning": "Test runtime", "config_warning": "Test config"}
+        finding = {"id": "CVE-2099-12345", "title": "Test", "severity": "high",
+                   "status": status, "current_version": "8.4.26",
+                   "fixed_version": None, "message": "Test finding",
                    "url": "https://example.invalid"}
         with patch("patchguide.cli.inspect_project", return_value=project), \
              patch("patchguide.cli.load_advisories", return_value=[]), \
              patch("patchguide.cli.evaluate_advisories", return_value=[finding]), \
              redirect_stdout(io.StringIO()):
-            code = main(["check", ".", "--fail-on", "affected"])
-        self.assertEqual(code, 1)
+            return main(["check", ".", "--fail-on", policy])
+
+    def test_fail_on_affected_returns_one(self):
+        self.assertEqual(self._run_with_finding("affected", "affected"), 1)
 
     def test_fail_on_unknown_returns_one(self):
-        project = {"path": "/tmp/demo", "cli_runtime": {"version": None},
-                   "runtime_warning": "Test runtime"}
-        finding = {"id": "CVE-2099-12345", "title": "Test", "severity": "critical",
-                   "status": "unknown", "current_version": None,
-                   "fixed_version": None, "message": "Unknown", "url": "https://example.invalid"}
-        with patch("patchguide.cli.inspect_project", return_value=project), \
-             patch("patchguide.cli.load_advisories", return_value=[]), \
-             patch("patchguide.cli.evaluate_advisories", return_value=[finding]), \
-             redirect_stdout(io.StringIO()):
-            code = main(["check", ".", "--fail-on", "unknown"])
-        self.assertEqual(code, 1)
+        self.assertEqual(self._run_with_finding("unknown", "unknown"), 1)
+
+    def test_fail_on_mitigation_required_returns_one(self):
+        self.assertEqual(self._run_with_finding("mitigation_required", "mitigation-required"), 1)
 
 
 if __name__ == "__main__":
