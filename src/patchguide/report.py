@@ -1,15 +1,60 @@
-"""Text and JSON reports."""
+"""Human-readable and JSON report formatting."""
 import json
-def build_report(project,findings):
-    states=[f["status"] for f in findings]
-    return {"tool":"PHP PatchGuide","schema_version":"1.0","project":project,"summary":{"advisory_count":len(findings),"affected":states.count("affected"),"fixed":states.count("fixed"),"unknown":states.count("unknown")},"findings":findings,"limitations":["CLI version may differ from serving runtime.","Version checks cannot reliably detect vendor backports.","Local advisory data is not exhaustive."]}
-def format_json(report): return json.dumps(report,indent=2,sort_keys=True)
+
+
+def build_report(project, findings):
+    states = [item["status"] for item in findings]
+    return {
+        "tool": "PHP PatchGuide",
+        "schema_version": "1.1",
+        "project": project,
+        "summary": {
+            "advisory_count": len(findings),
+            "affected": states.count("affected"),
+            "fixed": states.count("fixed"),
+            "unknown": states.count("unknown"),
+            "mitigation_required": states.count("mitigation_required"),
+            "mitigated": states.count("mitigated")
+        },
+        "findings": findings,
+        "limitations": [
+            "CLI version may differ from serving runtime.",
+            "Version checks cannot reliably detect vendor backports.",
+            "Local advisory data is not exhaustive.",
+            "Static INI files do not prove the effective configuration of every serving worker."
+        ]
+    }
+
+
+def format_json(report):
+    return json.dumps(report, indent=2, sort_keys=True)
+
+
 def format_text(report):
-    p=report["project"]; version=p.get("cli_runtime",{}).get("version") or "not detected"
-    lines=["PHP PatchGuide","Project: "+p.get("path","?"),"PHP project detected: "+("yes" if p.get("is_php_project") else "not confirmed"),"PHP CLI version: "+version,"Advisory findings: "+str(report["summary"]["advisory_count"]),""] 
-    if not report["findings"]: lines.append("No local advisory records were loaded.")
-    for f in report["findings"]:
-        lines.append("{} {} [{}] {}".format(f["severity"].upper(),f["id"],f["status"],f["message"]))
-        if f.get("url"): lines.append("         Source: "+f["url"])
-    lines += ["","Runtime note: "+p.get("runtime_warning",""),"Verify official vendor guidance before upgrading."]
+    project = report["project"]
+    version = project.get("cli_runtime", {}).get("version") or "not detected"
+    summary = report["summary"]
+    lines = [
+        "PHP PatchGuide",
+        "Project: " + project.get("path", "?"),
+        "PHP project detected: " + ("yes" if project.get("is_php_project") else "not confirmed"),
+        "PHP CLI version: " + version,
+        "Advisory findings: " + str(summary["advisory_count"]),
+        "Affected: {affected} | Fixed: {fixed} | Unknown: {unknown}".format(**summary),
+        "Mitigation required: {mitigation_required} | Mitigation configured: {mitigated}".format(**summary),
+        ""
+    ]
+    if not report["findings"]:
+        lines.append("No local advisory records were loaded.")
+    for item in report["findings"]:
+        lines.append("{} {} [{}] {}".format(
+            item["severity"].upper(), item["id"], item["status"], item["message"]))
+        if item.get("url"):
+            lines.append("         Source: " + item["url"])
+    lines.extend([
+        "",
+        "Runtime note: " + project.get("runtime_warning", ""),
+        "Configuration note: " + project.get("config_warning", ""),
+        "Verify official vendor guidance before upgrading."
+    ])
     return "\n".join(lines)
