@@ -1,0 +1,45 @@
+name: PHP PatchGuide
+description: Check a PHP project against PHP PatchGuide's reviewed local advisory data
+author: Suprim Ojha
+inputs:
+  path:
+    description: Path to the PHP project to inspect, relative to the workspace
+    required: false
+    default: .
+  fail-on:
+    description: "CI policy: never, affected, unknown, or mitigation-required"
+    required: false
+    default: affected
+  report-path:
+    description: Where to write the JSON report, relative to the workspace
+    required: false
+    default: patchguide-report.json
+outputs:
+  report-path:
+    description: Path to the generated JSON report
+    value: ${{ steps.scan.outputs.report-path }}
+runs:
+  using: composite
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    - name: Install PHP PatchGuide
+      shell: bash
+      env:
+        PATCHGUIDE_ACTION_PATH: ${{ github.action_path }}
+      run: python -m pip install "$PATCHGUIDE_ACTION_PATH"
+    - name: Scan project
+      id: scan
+      shell: bash
+      env:
+        PATCHGUIDE_PATH: ${{ inputs.path }}
+        PATCHGUIDE_FAIL_ON: ${{ inputs.fail-on }}
+        PATCHGUIDE_REPORT_PATH: ${{ inputs.report-path }}
+      run: |
+        set -euo pipefail
+        patchguide check "$PATCHGUIDE_PATH" \
+          --fail-on "$PATCHGUIDE_FAIL_ON" \
+          --json "$PATCHGUIDE_REPORT_PATH"
+        echo "report-path=$PATCHGUIDE_REPORT_PATH" >> "$GITHUB_OUTPUT"
