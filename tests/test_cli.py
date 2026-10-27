@@ -71,6 +71,19 @@ class CliTests(unittest.TestCase):
              redirect_stdout(io.StringIO()):
             return main(["check", ".", "--fail-on", policy])
 
+    def test_check_passes_ini_settings_to_advisory_checks(self):
+        settings = {"session.upload_progress.enabled": [
+            {"file": "php.ini", "value": "off"}
+        ]}
+        project = {"path": "/tmp/demo", "cli_runtime": {"version": "8.4.26"},
+                   "php_ini_settings": settings, "runtime_warning": "", "config_warning": ""}
+        with patch("patchguide.cli.inspect_project", return_value=project), \
+             patch("patchguide.cli.load_advisories", return_value=[]), \
+             patch("patchguide.cli.evaluate_advisories", return_value=[]) as evaluate, \
+             redirect_stdout(io.StringIO()):
+            self.assertEqual(main(["check", "."]), 0)
+        evaluate.assert_called_once_with("8.4.26", [], settings)
+
     def test_fail_on_affected_returns_one(self):
         self.assertEqual(self._run_with_finding("affected", "affected"), 1)
 
