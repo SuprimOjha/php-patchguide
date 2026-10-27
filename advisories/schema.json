@@ -1,6 +1,5 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/SuprimOjha/php-patchguide/blob/main/advisories/schema.json",
   "title": "PHP PatchGuide advisory",
   "type": "object",
   "required": [
@@ -14,6 +13,13 @@
     "id": {
       "type": "string",
       "pattern": "^CVE-[0-9]{4}-[0-9]{4,}$"
+    },
+    "kind": {
+      "type": "string",
+      "enum": [
+        "version",
+        "mitigation"
+      ]
     },
     "title": {
       "type": "string",
@@ -41,13 +47,31 @@
     },
     "fixed_by": {
       "type": "object",
-      "minProperties": 1,
       "patternProperties": {
         "^[0-9]+\\.[0-9]+$": {
           "type": "string",
           "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
         }
       },
+      "additionalProperties": false
+    },
+    "mitigation": {
+      "type": "object",
+      "properties": {
+        "setting": {
+          "type": "string"
+        },
+        "recommended_value": {
+          "type": "string"
+        },
+        "until": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "setting",
+        "recommended_value"
+      ],
       "additionalProperties": false
     },
     "url": {
@@ -71,5 +95,39 @@
       "type": "string"
     }
   },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "kind": {
+            "const": "mitigation"
+          }
+        },
+        "required": [
+          "kind"
+        ]
+      },
+      "then": {
+        "properties": {
+          "fixed_by": {
+            "maxProperties": 0
+          },
+          "mitigation": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "mitigation"
+        ]
+      },
+      "else": {
+        "properties": {
+          "fixed_by": {
+            "minProperties": 1
+          }
+        }
+      }
+    }
+  ],
   "additionalProperties": true
 }
