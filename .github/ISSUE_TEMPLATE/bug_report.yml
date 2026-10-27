@@ -1,0 +1,43 @@
+name: Bug report
+description: Report a reproducible problem with PHP PatchGuide
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: "Please do not include secrets, private source code, or production credentials."
+  - type: input
+    id: version
+    attributes:
+      label: PatchGuide version
+      description: Output of `patchguide version`
+      placeholder: "PHP PatchGuide 0.2.0"
+    validations:
+      required: true
+  - type: textarea
+    id: command
+    attributes:
+      label: Command and environment
+      description: Include the command, Python version, and operating system.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Use a small sanitized fixture if possible.
+    validations:
+      required: false
