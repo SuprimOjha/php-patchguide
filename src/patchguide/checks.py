@@ -7,7 +7,6 @@ def evaluate_advisories(version, advisories, ini_settings=None):
     settings = ini_settings or {}
     upload_values = [str(item.get("value", "")).lower()
                      for item in settings.get("session.upload_progress.enabled", [])]
-    upload_disabled = bool(upload_values) and upload_values[-1] in {"0", "off", "false", "no"}
     findings = []
     for item in advisories:
         if item.get("kind") == "mitigation":
