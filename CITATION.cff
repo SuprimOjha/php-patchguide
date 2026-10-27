@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If PHP PatchGuide helps your work, please cite the repository and include the version you used."
+title: "PHP PatchGuide"
+type: software
+authors:
+  - family-names: Ojha
+    given-names: Suprim
+repository-code: "https://github.com/SuprimOjha/php-patchguide"
+license: MIT
+version: 0.2.0
