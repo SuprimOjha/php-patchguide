@@ -17,6 +17,14 @@ class CliTests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertIn("PHP PatchGuide", out.getvalue())
 
+    def test_global_version_flag(self):
+        out = io.StringIO()
+        with redirect_stdout(out):
+            with self.assertRaises(SystemExit) as raised:
+                main(["--version"])
+        self.assertEqual(raised.exception.code, 0)
+        self.assertIn("PHP PatchGuide", out.getvalue())
+
     def test_list(self):
         out = io.StringIO()
         with redirect_stdout(out):
