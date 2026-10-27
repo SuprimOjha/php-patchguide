@@ -59,7 +59,8 @@ class CliTests(unittest.TestCase):
 
     def _run_with_finding(self, status, policy):
         project = {"path": "/tmp/demo", "cli_runtime": {"version": "8.4.26"},
-                   "runtime_warning": "Test runtime", "config_warning": "Test config"}
+                   "php_ini_settings": {}, "runtime_warning": "Test runtime",
+                   "config_warning": "Test config"}
         finding = {"id": "CVE-2099-12345", "title": "Test", "severity": "high",
                    "status": status, "current_version": "8.4.26",
                    "fixed_version": None, "message": "Test finding",
