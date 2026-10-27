@@ -60,6 +60,19 @@ class AdvisoryTests(unittest.TestCase):
         self.assertEqual(finding["status"], "mitigation_required")
         self.assertIsNone(finding["fixed_version"])
 
+
+    def test_conflicting_ini_values_are_unknown(self):
+        record = {"id": "CVE-2099-12346", "kind": "mitigation", "title": "Mitigation",
+                  "severity": "unknown", "fixed_by": {},
+                  "url": "https://example.invalid/advisory"}
+        settings = {"session.upload_progress.enabled": [
+            {"file": "a.ini", "value": "off"},
+            {"file": "z.ini", "value": "on"},
+        ]}
+        finding = evaluate_advisories("8.4.27", [record], settings)[0]
+        self.assertEqual(finding["status"], "unknown")
+        self.assertIn("disagree", finding["message"])
+
     def test_disabled_setting_is_reported_as_mitigated(self):
         record = {"id": "CVE-2099-12346", "kind": "mitigation", "title": "Mitigation",
                   "severity": "high", "fixed_by": {},
