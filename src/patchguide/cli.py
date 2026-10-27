@@ -16,6 +16,7 @@ def main(argv=None):
         prog="patchguide",
         description="Read-only PHP security diagnostics",
     )
+    parser.add_argument("--version", action="version", version="PHP PatchGuide " + __version__)
     sub = parser.add_subparsers(dest="command", required=True)
 
     check = sub.add_parser("check", help="inspect a PHP project")
