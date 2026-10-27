@@ -58,6 +58,41 @@ patchguide check . --json patchguide-report.json --fail-on affected
 
 See [CI integration](docs/ci-integration.md) before using a result to block a deployment.
 
+## Use it in GitHub Actions
+
+You can run PatchGuide on pull requests with the composite action included in this repository:
+
+```yaml
+name: PHP security check
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  patchguide:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: SuprimOjha/php-patchguide@main
+        with:
+          path: .
+          fail-on: affected
+          report-path: patchguide-report.json
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: php-patchguide-report
+          path: patchguide-report.json
+          if-no-files-found: ignore
+```
+
+For a production workflow, pin the action to a reviewed release tag or commit SHA rather than `@main`. The action installs Python and PatchGuide; it does not install PHP or run your application. See [the full action guide](docs/github-action.md).
+
 ## Advisory data
 
 The bundled records cover two PHP security advisories with fixed-version information and a separate mitigation note for CVE-2026-115560. For that mitigation-only record, the PHP team's [23 October notice](https://www.php.net/archive/2026.php#2026-10-23-1) recommends setting `session.upload_progress.enabled=0` until a regular bug-fix release addresses the issue. PatchGuide does not assign a fixed version where the notice doesn't provide one.
