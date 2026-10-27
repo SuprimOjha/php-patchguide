@@ -23,9 +23,9 @@ def main(argv=None):
     check.add_argument("--json", dest="json_path", metavar="FILE",
                        help="write JSON to FILE, or use '-' for stdout")
     check.add_argument("--advisories-dir", help="load reviewed advisory JSON from this directory")
-    check.add_argument("--fail-on", choices=("never", "affected", "unknown"),
+    check.add_argument("--fail-on", choices=("never", "affected", "unknown", "mitigation-required"),
                        default="never",
-                       help="exit 1 when affected findings exist, or when any status is unknown")
+                       help="exit 1 for affected findings, unknown status, or required mitigations")
 
     adv = sub.add_parser("advisories", help="inspect bundled advisory records")
     asp = adv.add_subparsers(dest="advisory_command", required=True)
@@ -76,6 +76,8 @@ def main(argv=None):
         if args.fail_on == "affected" and report["summary"]["affected"]:
             return 1
         if args.fail_on == "unknown" and report["summary"]["unknown"]:
+            return 1
+        if args.fail_on == "mitigation-required" and report["summary"]["mitigation_required"]:
             return 1
         return 0
     except (OSError, ValueError) as exc:
