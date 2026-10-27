@@ -2,14 +2,14 @@
 import re
 
 _PATTERN = re.compile(r"(?<!\d)(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?")
-_PRERELEASE = re.compile(r"(?<![A-Za-z0-9])(dev|alpha|beta|rc)\.?\d*\b", re.I)
+_PRERELEASE = re.compile(r"(dev|alpha|beta|rc)\.?\d*\b", re.I)
 
 
 def parse_version(value):
     if not value:
         return None
     match = _PATTERN.search(value.strip())
-    return tuple(map(int, match.groups())) if match else None
+    return tuple(map(int, match.groups()) ) if match else None
 
 
 def compare_versions(left, right):
