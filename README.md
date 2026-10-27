@@ -3,7 +3,7 @@
 [![Tests](https://github.com/SuprimOjha/php-patchguide/actions/workflows/tests.yml/badge.svg)](https://github.com/SuprimOjha/php-patchguide/actions/workflows/tests.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-A read-only PHP security helper with project detection, a local advisory database, text/JSON reports, CI exit policies, tests, and GitHub Actions.
+A read-only PHP security helper that inspects project metadata, compares the local CLI runtime against a reviewed advisory database, checks selected INI settings, and produces text/JSON reports for developers and CI.
 
 ## Quick start
 
@@ -16,10 +16,11 @@ python -m pip install -e .
 patchguide check .
 patchguide advisories list
 patchguide advisories show CVE-2026-109618
+patchguide advisories show CVE-2026-115560
 patchguide check . --json report.json
 ```
 
-Run the test suite:
+Run all tests:
 
 ```bash
 python -m unittest discover -s tests -v
@@ -27,45 +28,41 @@ python -m unittest discover -s tests -v
 
 ## Features
 
-- Inspects Composer metadata, PHP file names, Dockerfile PHP image tags, and version pins.
-- Detects the local CLI PHP version using `php -v`, with a timeout.
-- Compares the detected version with reviewed local advisory records.
-- Produces human-readable and JSON reports.
-- Offers opt-in CI exit policies for known affected or unknown results.
-- Includes a JSON schema for advisory records and a wheel-install smoke test in CI.
-- Local checks do not modify project files, execute application PHP, or send project data over the network.
+- Discovers Composer metadata, PHP files, Dockerfile PHP image tags, and version pins.
+- Detects local CLI PHP version with a timeout.
+- Checks bundled PHP security records against the detected version.
+- Inspects visible INI files for `session.upload_progress.enabled` and related session settings.
+- Distinguishes fixed/affected version findings from mitigation-only guidance.
+- Produces text and JSON reports, with CI failure policies for affected, unknown, or mitigation-required results.
+- Runs tests on Python 3.10–3.13 and smoke-tests the built wheel.
+- Scheduled archive monitoring flags CVE identifiers seen upstream but absent from the local database.
 
 ## CI usage
 
 ```bash
 patchguide check . --json patchguide-report.json --fail-on affected
+patchguide check . --json patchguide-report.json --fail-on mitigation-required
 ```
 
-Exit policy:
-
-- `--fail-on never` (default): return success if the scan completes.
-- `--fail-on affected`: exit 1 if any known advisory marks the detected version affected.
-- `--fail-on unknown`: exit 1 if any advisory status is unknown.
+- `--fail-on never`: report only; exit 0 if the scan completed.
+- `--fail-on affected`: exit 1 when a known version rule says affected.
+- `--fail-on unknown`: exit 1 if any result is unknown.
+- `--fail-on mitigation-required`: exit 1 if a reviewed advisory says a mitigation is required based on the discovered config.
 - Exit 2 indicates invalid input or unreadable data.
 
 See [CI integration](docs/ci-integration.md) before using a security gate.
 
+## Current advisory coverage
+
+The local database includes two critical PHP issues fixed in PHP 8.5.12, 8.4.27, 8.3.36, and 8.2.35, plus mitigation guidance for CVE-2026-115560. The PHP Security Team recommends setting `session.upload_progress.enabled=0` until the next regular bug-fix release for the unusual configuration/application vector described in its [23 October notice](https://www.php.net/archive/2026.php#2026-10-23-1). This record deliberately has **no fixed version**.
+
+For the critical issues, read [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w), [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp), and the [official PHP archive](https://www.php.net/archive/2026.php). The archive monitor identifies possible gaps; it does not automatically trust or ingest new records.
+
 ## Important limitations
 
-PatchGuide is an early-stage helper, **not a complete vulnerability scanner**. The CLI PHP version can differ from PHP-FPM, Apache/mod_php, containers, and managed hosting. Composer constraints are not proof of the deployed runtime. Version-only checks cannot reliably identify vendor backports. The local advisory database is intentionally limited and is not fetched or updated during a scan.
+PatchGuide is an early-stage helper, **not a complete vulnerability scanner**. The CLI version may differ from PHP-FPM, Apache, containers, or production hosting. Static INI files do not prove the effective configuration of every worker. The scan does not prove whether application code changes the session handler dynamically, audit Composer packages, inspect every source-level vulnerability, or account for vendor backports. Local checks do not modify project files, execute application PHP, or send project data over the network.
 
-The bundled records cover two critical PHP issues announced on 21 October 2026. The official PHP archive lists patched releases 8.5.12, 8.4.27, 8.3.36, and 8.2.35. Read the upstream advisories before taking action: [CVE-2026-109618](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w), [CVE-2026-109619](https://github.com/php/php-src/security/advisories/GHSA-6wmf-4rv5-p3rp), [PHP security archive](https://www.php.net/archive/2026.php), and [supported versions](https://www.php.net/supported-versions.php).
-
-## Documentation
-
-- [Installation and usage](docs/usage.md)
-- [Architecture](docs/architecture.md)
-- [Limitations](docs/limitations.md)
-- [CI integration](docs/ci-integration.md)
-- [Advisory data conventions](docs/advisory-conventions.md)
-- [Security policy](SECURITY.md)
-- [Contributing](CONTRIBUTING.md)
-- [Changelog](CHANGELOG.md)
+Always verify findings against official PHP and vendor guidance. See [limitations](docs/limitations.md), [advisory conventions](docs/advisory-conventions.md), [monitoring](docs/monitoring.md), and [security policy](SECURITY.md).
 
 ## License
 
